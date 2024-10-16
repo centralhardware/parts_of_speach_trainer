@@ -1,4 +1,7 @@
+import dev.inmo.kslog.common.KSLog
+import dev.inmo.kslog.common.info
 import dev.inmo.tgbotapi.AppConfig
+import dev.inmo.tgbotapi.bot.TelegramBot
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
@@ -9,6 +12,7 @@ import dev.inmo.tgbotapi.extensions.utils.types.buttons.replyKeyboard
 import dev.inmo.tgbotapi.extensions.utils.types.buttons.simpleButton
 import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.ChatId
+import dev.inmo.tgbotapi.types.chat.User
 import dev.inmo.tgbotapi.utils.row
 import kotliquery.queryOf
 import kotliquery.sessionOf
@@ -18,19 +22,15 @@ suspend fun main() {
     AppConfig.init("PartsOfSpeachTrainer")
     longPolling {
         onCommand("start") {
-            val word = getRandomWord()
-            state[it.from!!.id] = word.second
-            send(it.chat, text = "${word.first}?", replyMarkup = keyboard)
+            sendWord(this, it.from)
         }
         onText {
             val text = it.text!!
             if (text == "/start") return@onText
 
-            if (text == (state[it.from!!.id]?.description ?: "")) {
+            if (WordType.fromFullName(text) == (state[it.from!!.id])) {
                 sendTextMessage(it.chat, "Правильно")
-                val word = getRandomWord()
-                state[it.from!!.id] = word.second
-                send(it.chat, text = "${word.first}?", replyMarkup = keyboard)
+                sendWord(this, it.from)
             } else {
                 sendTextMessage(it.chat, "Неправильно")
             }
@@ -38,9 +38,22 @@ suspend fun main() {
     }.second.join()
 }
 
+suspend fun sendWord(bot: TelegramBot, chat: User?) {
+    val word = getRandomWord()
+    state[chat!!.id] = word.second
+    bot.send(chat, text = "${word.first}?", replyMarkup = keyboard)
+    KSLog.info("${chat!!.id.chatId.long} ${word.first} ${word.second.fullName}")
+}
+
 val keyboard = replyKeyboard {
-    WordType.entries
-        .forEach { type -> row { simpleButton(type.description) }  }
+    row { simpleButton(WordType.VERB.fullName); simpleButton(WordType.GERUND.fullName) }
+    row { simpleButton(WordType.INTERJECTION.fullName); simpleButton(WordType.PRONOUN.fullName) }
+    row { simpleButton(WordType.ADVERB.fullName); simpleButton(WordType.ADVERB_PRONOUN.fullName) }
+    row { simpleButton(WordType.PREDICATE.fullName); simpleButton(WordType.PREPOSITION.fullName) }
+    row { simpleButton(WordType.ADJECTIVE.fullName); simpleButton(WordType.ADJECTIVE_PRONOUN.fullName) }
+    row { simpleButton(WordType.PARTICIPLE.fullName); simpleButton(WordType.CONJUNCTION.fullName) }
+    row { simpleButton(WordType.NOUN.fullName); simpleButton(WordType.NOUN_PRONOUN.fullName) }
+    row { simpleButton(WordType.PARTICLE.fullName); simpleButton(WordType.NUMERAL.fullName) }
 }
 
 val session = sessionOf(System.getenv("POSTGRES_URL"),
@@ -48,9 +61,20 @@ val session = sessionOf(System.getenv("POSTGRES_URL"),
     System.getenv("POSTGRES_PASSWORD"))
 fun getRandomWord(): Pair<String, WordType> = session.run(
     queryOf("""
+            WITH RecordTypes AS (
+                SELECT DISTINCT type
+                FROM words
+            ),
+            RandomType AS (
+                SELECT type
+                FROM RecordTypes
+                ORDER BY RANDOM()
+                LIMIT 1
+            )
             SELECT word, type
             FROM words
-            OFFSET floor(random() * 4159394)
+            WHERE type = (SELECT type FROM RandomType)
+            ORDER BY RANDOM()
             LIMIT 1;
-        """).map { row -> Pair(row.string("word"), WordType.fromDescription(row.string("type"))) }.asSingle
+        """).map { row -> Pair(row.string("word"), WordType.fromCode(row.string("type"))) }.asSingle
 )!!

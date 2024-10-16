@@ -1,24 +1,28 @@
-enum class WordType(val description: String) {
-    VERB("гл"),
-    GERUND("дееп"),
-    INTERJECTION("межд"),
-    PRONOUN("мест"),
-    ADVERB("нар"),
-    ADVERB_PRONOUN("нар,мест"),
-    PREDICATE("предик"),
-    PREPOSITION("предл"),
-    ADJECTIVE("прл"),
-    ADJECTIVE_PRONOUN("прл,мест"),
-    PARTICIPLE("прч"),
-    CONJUNCTION("союз"),
-    NOUN("сущ"),
-    NOUN_PRONOUN("сущ,мест"),
-    PARTICLE("част"),
-    NUMERAL("числ");
+enum class WordType(val code: String, val fullName: String) {
+    VERB("гл", "глагол"),
+    GERUND("дееп", "деепричастие"),
+    INTERJECTION("межд", "междометие"),
+    PRONOUN("мест", "местоимение"),
+    ADVERB("нар", "наречие"),
+    ADVERB_PRONOUN("нар,мест", "местоимение наречие"),
+    PREDICATE("предик", "предикатив"),
+    PREPOSITION("предл", "предлог"),
+    ADJECTIVE("прл", "прилагательное"),
+    ADJECTIVE_PRONOUN("прл,мест", "прилагательное местоимение"),
+    PARTICIPLE("прч", "причастие"),
+    CONJUNCTION("союз", "союз"),
+    NOUN("сущ", "существительное"),
+    NOUN_PRONOUN("сущ,мест", "существительное местоимение"),
+    PARTICLE("част", "настоящее"),
+    NUMERAL("числ", "числительное");
 
     companion object {
-        fun fromDescription(description: String): WordType {
-            return values().find { it.description == description }!!
+        fun fromCode(code: String): WordType {
+            return values().find { it.code == code }?: throw IllegalArgumentException("$code not found")
+        }
+
+        fun fromFullName(fullName: String): WordType {
+            return values().find { it.fullName == fullName }?: throw IllegalArgumentException("$fullName not found")
         }
     }
 }
