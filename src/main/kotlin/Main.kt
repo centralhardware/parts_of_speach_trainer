@@ -3,6 +3,7 @@ import dev.inmo.kslog.common.info
 import dev.inmo.tgbotapi.AppConfig
 import dev.inmo.tgbotapi.bot.TelegramBot
 import dev.inmo.tgbotapi.extensions.api.send.send
+import dev.inmo.tgbotapi.extensions.api.send.sendActionTyping
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onText
@@ -39,6 +40,7 @@ suspend fun main() {
 }
 
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
+    bot.sendActionTyping(chat!!)
     val word = getRandomWord()
     state[chat!!.id] = word.second
     bot.send(chat, text = "${word.first}?", replyMarkup = keyboard)
@@ -61,20 +63,20 @@ val session = sessionOf(System.getenv("POSTGRES_URL"),
     System.getenv("POSTGRES_PASSWORD"))
 fun getRandomWord(): Pair<String, WordType> = session.run(
     queryOf("""
-            WITH RecordTypes AS (
-                SELECT DISTINCT type
-                FROM words
-            ),
-            RandomType AS (
+            WITH RandomType AS (
                 SELECT type
-                FROM RecordTypes
+                FROM words
                 WHERE type != 'предик'
+                GROUP BY type
                 ORDER BY RANDOM()
                 LIMIT 1
             )
-            SELECT word, type
+            SELECT word, max(type) as type
             FROM words
-            WHERE type = (SELECT type FROM RandomType)
+            WHERE type = (SELECT type FROM RandomType) 
+                AND code_parent = 0
+            GROUP BY word
+            HAVING count(distinct type) = 1
             ORDER BY RANDOM()
             LIMIT 1;
         """).map { row -> Pair(row.string("word"), WordType.fromCode(row.string("type"))) }.asSingle
