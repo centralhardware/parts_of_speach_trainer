@@ -13,7 +13,7 @@ enum class WordType(val code: String, val fullName: String) {
     CONJUNCTION("союз", "союз"),
     NOUN("сущ", "существительное"),
     NOUN_PRONOUN("сущ,мест", "существительное местоимение"),
-    PARTICLE("част", "настоящее"),
+    PARTICLE("част", "частица"),
     NUMERAL("числ", "числительное");
 
     companion object {
