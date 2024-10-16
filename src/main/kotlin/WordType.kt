@@ -5,7 +5,6 @@ enum class WordType(val code: String, val fullName: String) {
     PRONOUN("мест", "местоимение"),
     ADVERB("нар", "наречие"),
     ADVERB_PRONOUN("нар,мест", "местоимение наречие"),
-    PREDICATE("предик", "предикатив"),
     PREPOSITION("предл", "предлог"),
     ADJECTIVE("прл", "прилагательное"),
     ADJECTIVE_PRONOUN("прл,мест", "прилагательное местоимение"),

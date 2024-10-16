@@ -49,11 +49,11 @@ val keyboard = replyKeyboard {
     row { simpleButton(WordType.VERB.fullName); simpleButton(WordType.GERUND.fullName) }
     row { simpleButton(WordType.INTERJECTION.fullName); simpleButton(WordType.PRONOUN.fullName) }
     row { simpleButton(WordType.ADVERB.fullName); simpleButton(WordType.ADVERB_PRONOUN.fullName) }
-    row { simpleButton(WordType.PREDICATE.fullName); simpleButton(WordType.PREPOSITION.fullName) }
     row { simpleButton(WordType.ADJECTIVE.fullName); simpleButton(WordType.ADJECTIVE_PRONOUN.fullName) }
     row { simpleButton(WordType.PARTICIPLE.fullName); simpleButton(WordType.CONJUNCTION.fullName) }
     row { simpleButton(WordType.NOUN.fullName); simpleButton(WordType.NOUN_PRONOUN.fullName) }
     row { simpleButton(WordType.PARTICLE.fullName); simpleButton(WordType.NUMERAL.fullName) }
+    row { simpleButton(WordType.PREPOSITION.fullName) }
 }
 
 val session = sessionOf(System.getenv("POSTGRES_URL"),
@@ -68,6 +68,7 @@ fun getRandomWord(): Pair<String, WordType> = session.run(
             RandomType AS (
                 SELECT type
                 FROM RecordTypes
+                WHERE type != 'предик'
                 ORDER BY RANDOM()
                 LIMIT 1
             )
