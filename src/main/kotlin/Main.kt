@@ -66,7 +66,7 @@ fun getRandomWord(): Pair<String, WordType> = session.run(
             WITH RandomType AS (
                 SELECT type
                 FROM words
-                WHERE type != 'предик'
+                WHERE type != 'предик' and type != 'ввод'
                 GROUP BY type
                 ORDER BY RANDOM()
                 LIMIT 1
