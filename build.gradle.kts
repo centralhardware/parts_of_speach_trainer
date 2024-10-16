@@ -19,6 +19,7 @@ dependencies {
     implementation("com.github.centralhardware:telegram-bot-commons:c236d89434")
     implementation("com.github.seratch:kotliquery:1.9.0")
     implementation("org.postgresql:postgresql:42.7.4")
+    implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 }
 
 tasks.test {

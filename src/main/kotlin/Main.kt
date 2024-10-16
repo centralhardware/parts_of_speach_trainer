@@ -1,3 +1,5 @@
+import com.github.michaelbull.retry.policy.stopAtAttempts
+import com.github.michaelbull.retry.retry
 import dev.inmo.kslog.common.KSLog
 import dev.inmo.kslog.common.info
 import dev.inmo.tgbotapi.AppConfig
@@ -41,7 +43,9 @@ suspend fun main() {
 
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
-    val word = getRandomWord()
+    val word = retry(stopAtAttempts(3)) {
+        getRandomWord()
+    }
     state[chat!!.id] = word.second
     bot.send(chat, text = "${word.first}?", replyMarkup = keyboard)
     KSLog.info("${chat!!.id.chatId.long} ${word.first} ${word.second.fullName}")
