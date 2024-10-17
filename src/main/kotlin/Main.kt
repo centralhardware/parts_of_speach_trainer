@@ -109,9 +109,10 @@ val session = sessionOf(System.getenv("POSTGRES_URL"),
 fun getRandomWord(difficult: String): Pair<String, WordType> = session.run(
     queryOf("""
             WITH RandomType AS (
-                SELECT DISTINCT type
+                SELECT type
                 FROM words
                 WHERE type NOT IN ('предик', 'ввод', 'нар,мест', 'прл,мест', 'сущ,мест') 
+                GROUP BY type
                 ORDER BY RANDOM()
                 LIMIT 1
             )
