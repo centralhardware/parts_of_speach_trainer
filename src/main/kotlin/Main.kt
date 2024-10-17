@@ -40,12 +40,18 @@ suspend fun main() {
         }
         onCommand("easy") {
             difficults[it.from!!.id] = "easy"
+            sendTextMessage(it.chat, "Установлено")
+            sendWord(this, it.from)
         }
         onCommand("medium") {
             difficults[it.from!!.id] = "medium"
+            sendTextMessage(it.chat, "Установлено")
+            sendWord(this, it.from)
         }
         onCommand("hard") {
             difficults[it.from!!.id] = "hard"
+            sendTextMessage(it.chat, "Установлено")
+            sendWord(this, it.from)
         }
         onText {
             val text = it.text!!
@@ -103,23 +109,24 @@ val session = sessionOf(System.getenv("POSTGRES_URL"),
 fun getRandomWord(difficult: String): Pair<String, WordType> = session.run(
     queryOf("""
             WITH RandomType AS (
-                SELECT type
+                SELECT DISTINCT type
                 FROM words
                 WHERE type NOT IN ('предик', 'ввод', 'нар,мест', 'прл,мест', 'сущ,мест') 
                 GROUP BY type
                 ORDER BY RANDOM()
                 LIMIT 1
             )
-            SELECT  word, 
-                    max(type) as type
+            SELECT word, max(type) as type
             FROM words
             WHERE type = (SELECT type FROM RandomType) 
                 AND code_parent = 0
-                AND (CASE 
-                        WHEN type IN ('сущ', 'прл', 'гл') THEN 'easy'
-                        WHEN type IN ('нар', 'числ', 'мест', 'союз', 'предл', 'част', 'межд') THEN 'medium'
-                        WHEN type IN ('дееп', 'прч') THEN 'hard'
-                    END) = :difficult
+                AND (
+                CASE 
+                        WHEN :difficult = 'easy' THEN type IN ('сущ', 'прл', 'гл')
+                        WHEN :difficult = 'medium' THEN type IN ('сущ', 'прл', 'гл', 'нар', 'числ', 'мест', 'союз', 'предл', 'част', 'межд')
+                        WHEN :difficult = 'hard' THEN type IN ('сущ', 'прл', 'гл', 'нар', 'числ', 'мест', 'союз', 'предл', 'част', 'межд', 'дееп', 'прч')
+                    END
+                )
             GROUP BY word
             HAVING count(distinct type) = 1
             ORDER BY RANDOM()
