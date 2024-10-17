@@ -111,16 +111,15 @@ fun getRandomWord(difficult: String): Pair<String, WordType> = session.run(
                 LIMIT 1
             )
             SELECT  word, 
-                    max(type) as type, 
-                    (CASE 
-                        WHEN type IN ('сущ', 'прл', 'гл') THEN 'easy'
-                        WHEN type IN ('нар', 'числ', 'мест', 'союз', 'предл', 'част', 'межд') THEN 'medium'
-                        WHEN type IN ('дееп', 'прч') THEN 'hard'
-                    END) as difficult
+                    max(type) as type
             FROM words
             WHERE type = (SELECT type FROM RandomType) 
                 AND code_parent = 0
-                AND difficult = :difficult
+                AND (CASE 
+                        WHEN type IN ('сущ', 'прл', 'гл') THEN 'easy'
+                        WHEN type IN ('нар', 'числ', 'мест', 'союз', 'предл', 'част', 'межд') THEN 'medium'
+                        WHEN type IN ('дееп', 'прч') THEN 'hard'
+                    END) = :difficult
             GROUP BY word
             HAVING count(distinct type) = 1
             ORDER BY RANDOM()
