@@ -112,7 +112,6 @@ fun getRandomWord(difficult: String): Pair<String, WordType> = session.run(
                 SELECT DISTINCT type
                 FROM words
                 WHERE type NOT IN ('предик', 'ввод', 'нар,мест', 'прл,мест', 'сущ,мест') 
-                GROUP BY type
                 ORDER BY RANDOM()
                 LIMIT 1
             )
