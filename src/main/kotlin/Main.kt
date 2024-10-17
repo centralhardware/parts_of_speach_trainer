@@ -70,7 +70,7 @@ suspend fun main() {
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
     val difficult = getDifficult(chat)
-    val word = retry(stopAtRetries(4)) {
+    val word = retry(stopAtRetries(10)) {
         getRandomWord(difficult)
     }
     state[chat!!.id] = word.second
