@@ -63,10 +63,10 @@ suspend fun main() {
 
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
-    val word = retry(stopAtAttempts(3)) {
-        getRandomWord(difficults[chat!!.id]!!)
-    }
     val difficult = getDifficult(chat)
+    val word = retry(stopAtAttempts(3)) {
+        getRandomWord(difficult)
+    }
     state[chat!!.id] = word.second
     bot.send(chat, text = "${word.first}?", replyMarkup = keyboards[difficult])
     KSLog.info("${chat!!.id.chatId.long} ${word.first} ${word.second.fullName} $difficult")
