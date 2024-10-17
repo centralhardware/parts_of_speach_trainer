@@ -4,14 +4,11 @@ enum class WordType(val code: String, val fullName: String) {
     INTERJECTION("межд", "междометие"),
     PRONOUN("мест", "местоимение"),
     ADVERB("нар", "наречие"),
-    ADVERB_PRONOUN("нар,мест", "местоимение наречие"),
     PREPOSITION("предл", "предлог"),
     ADJECTIVE("прл", "прилагательное"),
-    ADJECTIVE_PRONOUN("прл,мест", "прилагательное местоимение"),
     PARTICIPLE("прч", "причастие"),
     CONJUNCTION("союз", "союз"),
     NOUN("сущ", "существительное"),
-    NOUN_PRONOUN("сущ,мест", "существительное местоимение"),
     PARTICLE("част", "частица"),
     NUMERAL("числ", "числительное");
 
