@@ -1,4 +1,4 @@
-import com.github.michaelbull.retry.policy.stopAtAttempts
+import com.github.michaelbull.retry.policy.stopAtRetries
 import com.github.michaelbull.retry.retry
 import dev.inmo.kslog.common.KSLog
 import dev.inmo.kslog.common.info
@@ -64,7 +64,7 @@ suspend fun main() {
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
     val difficult = getDifficult(chat)
-    val word = retry(stopAtAttempts(3)) {
+    val word = retry(stopAtRetries(4)) {
         getRandomWord(difficult)
     }
     state[chat!!.id] = word.second
