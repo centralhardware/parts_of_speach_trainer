@@ -116,7 +116,7 @@ fun getRandomWord(difficult: String): Pair<String, WordType> = session.run(
                         WHEN type IN ('сущ', 'прл', 'гл') THEN 'easy'
                         WHEN type IN ('нар', 'числ', 'мест', 'союз', 'предл', 'част', 'межд') THEN 'medium'
                         WHEN type IN ('дееп', 'прч') THEN 'hard'
-                    END) as difficalt
+                    END) as difficult
             FROM words
             WHERE type = (SELECT type FROM RandomType) 
                 AND code_parent = 0
