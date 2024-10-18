@@ -17,8 +17,10 @@ import dev.inmo.tgbotapi.extensions.utils.types.buttons.simpleButton
 import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.BotCommand
 import dev.inmo.tgbotapi.types.chat.User
+import dev.inmo.tgbotapi.utils.RiskFeature
 import dev.inmo.tgbotapi.utils.row
 
+@OptIn(RiskFeature::class)
 suspend fun main() {
     AppConfig.init("PartsOfSpeachTrainer")
     longPolling {
@@ -32,17 +34,17 @@ suspend fun main() {
             sendWord(this, it.from)
         }
         onCommand("easy") {
-            Storage.setDifficult(it.from!!.id.chatId.long, Difficult.EASY)
+            Storage.setDifficult(it.from!!, Difficult.EASY)
             sendTextMessage(it.chat, "Установлено")
             sendWord(this, it.from)
         }
         onCommand("medium") {
-            Storage.setDifficult(it.from!!.id.chatId.long, Difficult.MEDIUM)
+            Storage.setDifficult(it.from!!, Difficult.MEDIUM)
             sendTextMessage(it.chat, "Установлено")
             sendWord(this, it.from)
         }
         onCommand("hard") {
-            Storage.setDifficult(it.from!!.id.chatId.long, Difficult.HARD)
+            Storage.setDifficult(it.from!!, Difficult.HARD)
             sendTextMessage(it.chat, "Установлено")
             sendWord(this, it.from)
         }
@@ -57,7 +59,7 @@ suspend fun main() {
         onText(initialFilter = CommonMessageFilterExcludeCommand()) {
             val text = it.text!!
 
-            if (WordType.fromFullName(text) == (Storage.getType(it.from!!.id.chatId.long))) {
+            if (WordType.fromFullName(text) == (Storage.getType(it.from!!))) {
                 sendTextMessage(it.chat, "Правильно")
                 sendWord(this, it.from)
             } else {
@@ -69,12 +71,12 @@ suspend fun main() {
 
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
-    val difficult = Storage.getDifficult(chat.id.chatId.long)
+    val difficult = Storage.getDifficult(chat)
     val next = WordMapper.getRandomWord(difficult)
     val word = next.first
-    Storage.setType(chat!!.id.chatId.long, next.second)
+    Storage.setType(chat, next.second)
     bot.send(chat, text = "$word?", replyMarkup = keyboards[difficult])
-    KSLog.info("${chat!!.id.chatId.long} $word ${next.second.fullName} $difficult")
+    KSLog.info("${chat.id.chatId.long} $word ${next.second.fullName} $difficult")
 }
 
 val easy = replyKeyboard {
