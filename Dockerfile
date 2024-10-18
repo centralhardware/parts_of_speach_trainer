@@ -14,7 +14,7 @@ RUN apt-get update
 RUN apt-get update && apt-get install -y curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN rm /etc/hostname
-RUN echo parts-of-speach-trainer-docker >> /etc/hostname
+RUN echo parts-of-speach-trainer-docker > /etc/hostname
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD curl --fail http://localhost:81/health || exit 1
