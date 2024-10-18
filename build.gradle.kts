@@ -17,12 +17,10 @@ repositories {
 
 dependencies {
     implementation("dev.inmo:tgbotapi:18.2.2-branch_18.2.2-build2465")
-    implementation("com.github.centralhardware:telegram-bot-commons:2647c7b56b")
+    implementation("com.github.centralhardware:telegram-bot-commons:1e503cc156")
     implementation("com.github.seratch:kotliquery:1.9.0")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("io.github.crackthecodeabhi:kreds:0.9.1")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("org.jsoup:jsoup:1.18.1")
 }
 
 tasks.test {
