@@ -5,10 +5,13 @@ object Storage {
 
     val redisClient = newClient(Endpoint.from(System.getenv("REDIS_URL")))
 
-    suspend fun setDifficult(chatId: Long, difficult: Dificult) =
+    suspend fun setDifficult(chatId: Long, difficult: Difficult) =
         redisClient.hset(chatId.toString(), Pair("difficult", difficult.name))
-    suspend fun getDifficult(chatId: Long): Dificult =
-        redisClient.hget(chatId.toString(), "difficult")?.let{ Dificult.valueOf(it) }?: Dificult.MEDIUM
+    suspend fun getDifficult(chatId: Long): Difficult =
+        redisClient.hget(chatId.toString(), "difficult")?.let{ Difficult.valueOf(it) }?: run {
+            setDifficult(chatId, Difficult.MEDIUM)
+            return@run Difficult.MEDIUM
+        }
 
 
     suspend fun setType(chatId: Long, type: WordType) =

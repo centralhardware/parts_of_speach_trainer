@@ -18,8 +18,6 @@ import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.BotCommand
 import dev.inmo.tgbotapi.types.chat.User
 import dev.inmo.tgbotapi.utils.row
-import kotliquery.queryOf
-import kotliquery.sessionOf
 
 suspend fun main() {
     AppConfig.init("PartsOfSpeachTrainer")
@@ -34,23 +32,23 @@ suspend fun main() {
             sendWord(this, it.from)
         }
         onCommand("easy") {
-            Storage.setDifficult(it.from!!.id.chatId.long, Dificult.EASY)
+            Storage.setDifficult(it.from!!.id.chatId.long, Difficult.EASY)
             sendTextMessage(it.chat, "Установлено")
             sendWord(this, it.from)
         }
         onCommand("medium") {
-            Storage.setDifficult(it.from!!.id.chatId.long, Dificult.MEDIUM)
+            Storage.setDifficult(it.from!!.id.chatId.long, Difficult.MEDIUM)
             sendTextMessage(it.chat, "Установлено")
             sendWord(this, it.from)
         }
         onCommand("hard") {
-            Storage.setDifficult(it.from!!.id.chatId.long, Dificult.HARD)
+            Storage.setDifficult(it.from!!.id.chatId.long, Difficult.HARD)
             sendTextMessage(it.chat, "Установлено")
             sendWord(this, it.from)
         }
         onCommandWithArgs("ignore") { msg, args ->
             if (args.size == 1) {
-                addToIgnore(args[0])
+                WordMapper.addToIgnore(args[0])
                 sendTextMessage(msg.chat, "Сохранено")
             } else {
                 sendTextMessage(msg.chat, "Неверный формат")
@@ -72,17 +70,18 @@ suspend fun main() {
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
     val difficult = Storage.getDifficult(chat.id.chatId.long)
-    val word = getRandomWord(difficult)
-    Storage.setType(chat!!.id.chatId.long, word.second)
-    bot.send(chat, text = "${word.first}?", replyMarkup = keyboards[difficult])
-    KSLog.info("${chat!!.id.chatId.long} ${word.first} ${word.second.fullName} $difficult")
+    val next = WordMapper.getRandomWord(difficult)
+    val word = next.first
+    Storage.setType(chat!!.id.chatId.long, next.second)
+    bot.send(chat, text = "$word?", replyMarkup = keyboards[difficult])
+    KSLog.info("${chat!!.id.chatId.long} $word ${next.second.fullName} $difficult")
 }
 
 val easy = replyKeyboard {
     row { simpleButton(WordType.NOUN.fullName); simpleButton(WordType.ADJECTIVE.fullName) }
     row { simpleButton(WordType.VERB.fullName) }
 }
-val media = replyKeyboard {
+val medium = replyKeyboard {
     row { simpleButton(WordType.NOUN.fullName); simpleButton(WordType.ADJECTIVE.fullName) }
     row { simpleButton(WordType.VERB.fullName); simpleButton(WordType.ADVERB.fullName) }
     row { simpleButton(WordType.NUMERAL.fullName); simpleButton(WordType.PRONOUN.fullName) }
@@ -98,47 +97,7 @@ val hard = replyKeyboard {
     row { simpleButton(WordType.PARTICIPLE.fullName); simpleButton(WordType.PARTICIPLE_ADJECTIVE.fullName) }
 }
 val keyboards = mapOf(
-    Dificult.EASY to easy,
-    Dificult.MEDIUM to media,
-    Dificult.HARD to hard,
+    Difficult.EASY to easy,
+    Difficult.MEDIUM to medium,
+    Difficult.HARD to hard,
 )
-
-val session = sessionOf(System.getenv("POSTGRES_URL"),
-    System.getenv("POSTGRES_USERNAME"),
-    System.getenv("POSTGRES_PASSWORD"))
-fun getRandomWord(difficult: Dificult): Pair<String, WordType> = session.run(
-    queryOf("""
-            WITH RandomType AS (
-                SELECT part_of_speech as type
-                FROM entry
-                WHERE (CASE 
-                        WHEN :difficult = 'EASY' THEN part_of_speech IN ('noun', 'adjective', 'verb')
-                        WHEN :difficult = 'MEDIUM' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection')
-                        WHEN :difficult = 'HARd' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection', 'participle', 'participleAdjective')
-                END)
-                GROUP BY part_of_speech
-                ORDER BY RANDOM()
-                LIMIT 1
-            )
-            SELECT written_rep, part_of_speech
-            FROM entry
-            WHERE part_of_speech = (SELECT type FROM RandomType) 
-                AND (
-                CASE 
-                        WHEN :difficult = 'EASY' THEN part_of_speech IN ('noun', 'adjective', 'verb')
-                        WHEN :difficult = 'MEDIUM' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection')
-                        WHEN :difficult = 'HARD' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection', 'participle', 'participleAdjective')
-                END
-                )
-                AND written_rep NOT IN (SELECT word FROM ignore_words)
-            ORDER BY RANDOM()
-            LIMIT 1;
-        """, mapOf("difficult" to difficult.name))
-        .map { row -> Pair(row.string("written_rep"), WordType.fromCode(row.string("part_of_speech"))) }.asSingle
-)!!
-
-fun addToIgnore(word: String) = session.execute(queryOf(
-    """
-        INSERT INTO ignore_words (word) VALUES (:word)
-    """, mapOf("word" to word)
-))

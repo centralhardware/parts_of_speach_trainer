@@ -1,4 +1,4 @@
-enum class Dificult {
+enum class Difficult {
     EASY,
     MEDIUM,
     HARD
