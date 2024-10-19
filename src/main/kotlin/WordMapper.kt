@@ -37,10 +37,14 @@ object WordMapper {
             .map { row -> Pair(row.string("written_rep"), WordType.fromCode(row.string("part_of_speech"))) }.asSingle
     )!!
 
-    fun markWord(word: String, status: WordStatus) = session.execute(queryOf(
+    fun markWord(word: String, status: WordStatus, statusReason: IgnoreReason = IgnoreReason.NONE) = session.execute(queryOf(
         """
-        UPDATE entry SET status = :status WHERE written_rep = :word
-    """, mapOf("word" to word, "status" to status.name)
+        UPDATE entry 
+        SET status = :status,
+            statusreason = :statusReason,
+            statusdate = now()
+        WHERE written_rep = :word
+    """, mapOf("word" to word, "status" to status.name, "statusReason" to statusReason.name)
     ))
 
     fun isNotValid(word: String) = session.run(queryOf(

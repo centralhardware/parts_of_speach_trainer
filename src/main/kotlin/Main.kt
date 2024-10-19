@@ -16,6 +16,7 @@ import dev.inmo.tgbotapi.extensions.utils.types.buttons.replyKeyboard
 import dev.inmo.tgbotapi.extensions.utils.types.buttons.simpleButton
 import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.BotCommand
+import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardMarkup
 import dev.inmo.tgbotapi.types.chat.User
 import dev.inmo.tgbotapi.utils.RiskFeature
 import dev.inmo.tgbotapi.utils.row
@@ -50,7 +51,7 @@ suspend fun main() {
         }
         onCommandWithArgs("ignore") { msg, args ->
             if (args.size == 1) {
-                WordMapper.markWord(args[0], WordStatus.IGNORE)
+                WordMapper.markWord(args[0], WordStatus.IGNORE, IgnoreReason.BLOCKED_BY_ADMIN)
                 sendTextMessage(msg.chat, "Сохранено")
             } else {
                 sendTextMessage(msg.chat, "Неверный формат")
@@ -75,9 +76,9 @@ suspend fun sendWord(bot: TelegramBot, chat: User?) {
     var next: Pair<String, WordType>? = WordMapper.getRandomWord(difficult)
     if (WordMapper.isNotValid(next!!.first)) {
         var isIgnore = Gemini.isValid(next.first)
-        while (isIgnore.getOrElse{ true}) {
-            if (isIgnore.isSuccess) {
-                WordMapper.markWord(next!!.first, WordStatus.IGNORE)
+        while (isIgnore.getOrNull()?.first == true) {
+            isIgnore.onSuccess {
+                WordMapper.markWord(next!!.first, WordStatus.IGNORE, isIgnore.getOrThrow().second!!)
                 KSLog.info("mark word ${next.first} as ignored")
             }
 
@@ -105,14 +106,10 @@ val medium = replyKeyboard {
     row { simpleButton(WordType.CONJUNCTION.fullName); simpleButton(WordType.PREPOSITION.fullName) }
     row { simpleButton(WordType.PARTICLE.fullName); simpleButton(WordType.INTERJECTION.fullName) }
 }
-val hard = replyKeyboard {
-    row { simpleButton(WordType.NOUN.fullName); simpleButton(WordType.ADJECTIVE.fullName) }
-    row { simpleButton(WordType.VERB.fullName); simpleButton(WordType.ADVERB.fullName) }
-    row { simpleButton(WordType.NUMERAL.fullName); simpleButton(WordType.PRONOUN.fullName) }
-    row { simpleButton(WordType.CONJUNCTION.fullName); simpleButton(WordType.PREPOSITION.fullName) }
-    row { simpleButton(WordType.PARTICLE.fullName); simpleButton(WordType.INTERJECTION.fullName) }
+val hard = ReplyKeyboardMarkup(medium.keyboard + replyKeyboard {
     row { simpleButton(WordType.PARTICIPLE.fullName); simpleButton(WordType.PARTICIPLE_ADJECTIVE.fullName) }
-}
+}.keyboard)
+
 val keyboards = mapOf(
     Difficult.EASY to easy,
     Difficult.MEDIUM to medium,
