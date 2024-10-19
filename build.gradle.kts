@@ -21,7 +21,8 @@ dependencies {
     implementation("com.github.seratch:kotliquery:1.9.0")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("io.github.crackthecodeabhi:kreds:0.9.1")
-}
+    implementation("org.jsoup:jsoup:1.14.3")
+    implementation("com.squareup.okhttp3:okhttp:4.9.2")}
 
 tasks.test {
     useJUnitPlatform()

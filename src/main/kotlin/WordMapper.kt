@@ -32,6 +32,7 @@ object WordMapper {
                 )
                 AND written_rep NOT IN (SELECT word FROM ignore_words)
                 AND written_rep NOT IN (SELECT word FROM swear)
+                AND ignore is false
             ORDER BY RANDOM()
             LIMIT 1;
         """, mapOf("difficult" to difficult.name))
@@ -43,5 +44,21 @@ object WordMapper {
         INSERT INTO ignore_words (word) VALUES (:word)
     """, mapOf("word" to word)
     ))
+
+    fun markWordForIgnore(word: String) = session.execute(queryOf(
+        """
+        UPDATE entry SET ignore = true WHERE written_rep = :word 
+    """, mapOf("word" to word)
+    ))
+
+    fun markWordValid(word: String) = session.execute(queryOf(
+        """
+        UPDATE entry SET valid = true WHERE written_rep = :word 
+    """, mapOf("word" to word)
+    ))
+
+    fun valid(word: String): Boolean = session.run(queryOf("""
+        select valid from entry where written_rep = :word
+    """, mapOf("word" to word)).map { row -> row.boolean("valid") }.asSingle)!!
 
 }

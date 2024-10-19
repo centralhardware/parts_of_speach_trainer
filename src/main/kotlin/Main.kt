@@ -72,10 +72,24 @@ suspend fun main() {
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
     val difficult = Storage.getDifficult(chat)
-    val next = WordMapper.getRandomWord(difficult)
-    val word = next.first
+    var next = WordMapper.getRandomWord(difficult)
+    var def = Wikitionary.validateWord(next.first)
+    if (!WordMapper.valid(next.first)) {
+        while (def == false) {
+            KSLog.info("mark word as ignore ${next.first}")
+            WordMapper.markWordForIgnore(next.first)
+            next = WordMapper.getRandomWord(difficult)
+            def = Wikitionary.validateWord(next.first)
+        }
+        WordMapper.markWordValid(next.first)
+        KSLog.info("mark word as valid ${next.first}")
+    }
+
     Storage.setType(chat, next.second)
-    bot.send(chat, text = "$word?", replyMarkup = keyboards[difficult])
+    val word = next.first
+    def!!.let {
+        bot.send(chat, text = word, replyMarkup = keyboards[difficult])
+    }
     KSLog.info("${chat.id.chatId.long} $word ${next.second.fullName} $difficult")
 }
 
