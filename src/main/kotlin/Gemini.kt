@@ -79,13 +79,13 @@ object Gemini {
     }
 
 
-    fun validatedWord(word: String): Boolean {
+    fun isValid(word: String): Result<Boolean> = runCatching {
         val res = sendPromptToGeminiAI("Необходимо определить является ли слово профессионализм или архаизмом или матом. Отвечай одним словом. Отвечай - когда слово не подходит под эти категории. Отвечай только когда сто процентно уверен. Всегда отвечай вариантами: архаизм|профессионализм|мат Слово: $word")
             .replace("\n", "").replace(" ", "")
         KSLog.info("gemin answer for word $word $res")
-        return !res.equals("архаизм", ignoreCase = true) &&
-            !res.equals("профессионализм", ignoreCase = true) &&
-            !res.equals("мат", ignoreCase = true)
+        return Result.success(res.equals("архаизм", ignoreCase = true) ||
+                res.equals("профессионализм", ignoreCase = true) ||
+                res.equals("мат", ignoreCase = true))
     }
 
 }

@@ -74,13 +74,15 @@ suspend fun sendWord(bot: TelegramBot, chat: User?) {
     val difficult = Storage.getDifficult(chat)
     var next: Pair<String, WordType>? = WordMapper.getRandomWord(difficult)
     if (WordMapper.isNotValid(next!!.first)) {
-        var status = runCatching { Gemini.validatedWord(next.first) }.getOrNull()?: WordStatus.IGNORE
-        while (status == WordStatus.IGNORE) {
-            WordMapper.markWord(next!!.first, WordStatus.IGNORE)
-            KSLog.info("mark word ${next.first} as ignored")
+        var isIgnore = Gemini.isValid(next.first)
+        while (isIgnore.getOrElse{ true}) {
+            if (isIgnore.isSuccess) {
+                WordMapper.markWord(next!!.first, WordStatus.IGNORE)
+                KSLog.info("mark word ${next.first} as ignored")
+            }
 
             next = WordMapper.getRandomWord(difficult)
-            status = runCatching { Gemini.validatedWord(next.first) }.getOrNull()?: WordStatus.IGNORE
+            isIgnore = Gemini.isValid(next.first)
         }
     }
     WordMapper.markWord(next.first, WordStatus.APPROVED)
