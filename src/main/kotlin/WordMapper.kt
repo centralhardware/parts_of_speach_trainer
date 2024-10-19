@@ -30,35 +30,23 @@ object WordMapper {
                         WHEN :difficult = 'HARD' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection', 'participle', 'participleAdjective')
                 END
                 )
-                AND written_rep NOT IN (SELECT word FROM ignore_words)
-                AND written_rep NOT IN (SELECT word FROM swear)
-                AND ignore is false
+                AND status != 'IGNORE'
             ORDER BY RANDOM()
             LIMIT 1;
         """, mapOf("difficult" to difficult.name))
             .map { row -> Pair(row.string("written_rep"), WordType.fromCode(row.string("part_of_speech"))) }.asSingle
     )!!
 
-    fun addToIgnore(word: String) = session.execute(queryOf(
+    fun markWord(word: String, status: WordStatus) = session.execute(queryOf(
         """
-        INSERT INTO ignore_words (word) VALUES (:word)
-    """, mapOf("word" to word)
+        UPDATE entry SET status = :status WHERE written_rep = :word
+    """, mapOf("word" to word, "status" to status.name)
     ))
 
-    fun markWordForIgnore(word: String) = session.execute(queryOf(
+    fun isNotValid(word: String) = session.run(queryOf(
         """
-        UPDATE entry SET ignore = true WHERE written_rep = :word 
-    """, mapOf("word" to word)
-    ))
-
-    fun markWordValid(word: String) = session.execute(queryOf(
-        """
-        UPDATE entry SET valid = true WHERE written_rep = :word 
-    """, mapOf("word" to word)
-    ))
-
-    fun valid(word: String): Boolean = session.run(queryOf("""
-        select valid from entry where written_rep = :word
-    """, mapOf("word" to word)).map { row -> row.boolean("valid") }.asSingle)!!
+           SELECT status != 'APPROVED' as valid FROM entry WHERE written_rep = :word  
+        """, mapOf("word" to word)
+    ).map{ row -> row.boolean("valid") }.asSingle)!!
 
 }

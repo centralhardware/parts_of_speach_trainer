@@ -50,7 +50,7 @@ suspend fun main() {
         }
         onCommandWithArgs("ignore") { msg, args ->
             if (args.size == 1) {
-                WordMapper.addToIgnore(args[0])
+                WordMapper.markWord(args[0], WordStatus.IGNORE)
                 sendTextMessage(msg.chat, "Сохранено")
             } else {
                 sendTextMessage(msg.chat, "Неверный формат")
@@ -72,24 +72,23 @@ suspend fun main() {
 suspend fun sendWord(bot: TelegramBot, chat: User?) {
     bot.sendActionTyping(chat!!)
     val difficult = Storage.getDifficult(chat)
-    var next = WordMapper.getRandomWord(difficult)
-    var def = Wikitionary.validateWord(next.first)
-    if (!WordMapper.valid(next.first)) {
-        while (def == false) {
-            KSLog.info("mark word as ignore ${next.first}")
-            WordMapper.markWordForIgnore(next.first)
+    var next: Pair<String, WordType>? = WordMapper.getRandomWord(difficult)
+    if (WordMapper.isNotValid(next!!.first)) {
+        var status: WordStatus? = runCatching { Gemini.validatedWord(next.first) }.getOrNull()?: WordStatus.IGNORE
+        while (status == WordStatus.IGNORE) {
+            WordMapper.markWord(next!!.first, WordStatus.IGNORE)
+            KSLog.info("mark word ${next.first} as ignored")
+
             next = WordMapper.getRandomWord(difficult)
-            def = Wikitionary.validateWord(next.first)
+            status = runCatching { Gemini.validatedWord(next.first) }.getOrNull()?: WordStatus.IGNORE
         }
-        WordMapper.markWordValid(next.first)
-        KSLog.info("mark word as valid ${next.first}")
     }
+    WordMapper.markWord(next.first, WordStatus.APPROVED)
+    KSLog.info("mark word ${next.first} as approved")
 
     Storage.setType(chat, next.second)
     val word = next.first
-    def!!.let {
-        bot.send(chat, text = word, replyMarkup = keyboards[difficult])
-    }
+    bot.send(chat, text = word, replyMarkup = keyboards[difficult])
     KSLog.info("${chat.id.chatId.long} $word ${next.second.fullName} $difficult")
 }
 

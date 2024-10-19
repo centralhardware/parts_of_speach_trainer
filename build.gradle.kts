@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm") version "2.0.20"
-    kotlin("plugin.serialization") version "2.0.20"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("plugin.serialization") version "2.0.20"
 }
 
 group = "me.centralhardware.telegram"
@@ -21,10 +21,11 @@ dependencies {
     implementation("com.github.seratch:kotliquery:1.9.0")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("io.github.crackthecodeabhi:kreds:0.9.1")
-    implementation("org.jsoup:jsoup:1.14.3")
-    implementation("com.squareup.okhttp3:okhttp:4.9.2")}
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+}
 
-tasks.test {
+    tasks.test {
     useJUnitPlatform()
 }
 
