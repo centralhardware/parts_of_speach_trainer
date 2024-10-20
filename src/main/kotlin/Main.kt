@@ -53,10 +53,11 @@ suspend fun main() {
         onCommandWithArgs("ignore") { msg, args ->
             if (args.size == 1) {
                 WordMapper.markWord(args[0], WordStatus.IGNORE, IgnoreReason.BLOCKED_BY_ADMIN)
-                sendTextMessage(msg.chat, "Сохранено")
+                sendTextMessage(msg.chat, "Сохранено", replyMarkup = keyboards[Storage.getDifficult(it.from!!)])
             } else {
-                sendTextMessage(msg.chat, "Неверный формат")
+                sendTextMessage(msg.chat, "Неверный формат", replyMarkup = keyboards[Storage.getDifficult(it.from!!)])
             }
+
         }
         onText(initialFilter = CommonMessageFilterExcludeCommand()) {
             val text = it.text!!
