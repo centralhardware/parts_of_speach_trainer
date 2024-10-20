@@ -29,7 +29,8 @@ suspend fun main() {
             BotCommand("start", "Start testing"),
             BotCommand("easy", "Установить легкий уровень легкости"),
             BotCommand("medium", "Установить средний уровень легкости"),
-            BotCommand("hard", "Установить сложный уровень легкости")
+            BotCommand("hard", "Установить сложный уровень легкости"),
+            BotCommand("ignore", "добавить слово в игнор")
         )
         onCommand("start") {
             sendWord(this, it.from)
