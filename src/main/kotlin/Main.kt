@@ -33,9 +33,7 @@ suspend fun main() {
             BotCommand("ignore", "добавить слово в игнор")
         )
         onCommand("start") {
-            while (true) {
-                sendWord(this, it.from)
-            }
+            sendWord(this, it.from)
         }
         onCommand("easy") {
             Storage.setDifficult(it.from!!, Difficult.EASY)
