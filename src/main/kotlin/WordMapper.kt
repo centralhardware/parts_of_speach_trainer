@@ -14,7 +14,7 @@ object WordMapper {
                 WHERE (CASE 
                         WHEN :difficult = 'EASY' THEN part_of_speech IN ('noun', 'adjective', 'verb')
                         WHEN :difficult = 'MEDIUM' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection')
-                        WHEN :difficult = 'HARd' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection', 'participle', 'participleAdjective')
+                        WHEN :difficult = 'HARD' THEN part_of_speech IN ('noun', 'adjective', 'verb', 'adverb', 'number', 'pronoun', 'conjunction', 'preposition', 'particle', 'interjection', 'participle', 'participleAdjective')
                 END)
                 GROUP BY part_of_speech
                 ORDER BY RANDOM()
