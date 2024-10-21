@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("dev.inmo:tgbotapi:18.2.2-branch_18.2.2-build2465")
-    implementation("com.github.centralhardware:telegram-bot-commons:fae3268b67")
+    implementation("com.github.centralhardware:telegram-bot-commons:af3541d290")
     implementation("com.github.seratch:kotliquery:1.9.0")
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("io.github.crackthecodeabhi:kreds:0.9.1")

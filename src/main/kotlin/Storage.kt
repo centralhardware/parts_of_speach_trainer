@@ -15,10 +15,13 @@ object Storage {
         }
 
 
-    suspend fun setType(user: User, type: WordType) =
-        redisClient.hset(user.rowId().toString(), Pair("type", type.name))
-    suspend fun getType(user: User): WordType? =
-        redisClient.hget(user.rowId().toString(), "type")?.let{ WordType.valueOf(it) }
-
+    suspend fun setNext(user: User, next: Pair<String, WordType>) {
+        redisClient.hset(user.rowId().toString(), Pair("type", next.second.name))
+        redisClient.hset(user.rowId().toString(), Pair("word", next.first))
+    }
+    suspend fun getNext(user: User) = Pair(
+        redisClient.hget(user.rowId().toString(), "word")!!,
+        redisClient.hget(user.rowId().toString(), "type")?.let{ WordType.valueOf(it) }!!
+    )
 
 }

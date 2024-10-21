@@ -16,7 +16,6 @@ import dev.inmo.tgbotapi.extensions.utils.types.buttons.replyKeyboard
 import dev.inmo.tgbotapi.extensions.utils.types.buttons.simpleButton
 import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.BotCommand
-import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardMarkup
 import dev.inmo.tgbotapi.types.chat.User
 import dev.inmo.tgbotapi.utils.RiskFeature
 import dev.inmo.tgbotapi.utils.row
@@ -26,10 +25,10 @@ suspend fun main() {
     AppConfig.init("PartsOfSpeachTrainer")
     longPolling {
         setMyCommands(
-            BotCommand("start", "Start testing"),
-            BotCommand("easy", "Установить легкий уровень легкости"),
-            BotCommand("medium", "Установить средний уровень легкости"),
-            BotCommand("hard", "Установить сложный уровень легкости"),
+            BotCommand("stat", "Вывести статистику сессии"),
+            BotCommand("easy", "Легкая сложность"),
+            BotCommand("medium", "Средний уровень сложности"),
+            BotCommand("hard", "Тяжелая сложность"),
             BotCommand("ignore", "добавить слово в игнор")
         )
         onCommand("start") {
@@ -58,12 +57,27 @@ suspend fun main() {
             } else {
                 sendTextMessage(msg.chat, "Неверный формат", replyMarkup = keyboards[Storage.getDifficult(msg.from!!)])
             }
-
+        }
+        onCommand("stat") {
+            val stat = Statistic.getStatistic(it.from!!)
+            val percent = if (stat.second != 0) {
+                (stat.first / stat.second * 100).coerceAtMost(100)
+            } else {
+                0
+            }
+            sendTextMessage(it.chat, """
+               правильно: ${stat.first}
+               неправильно: ${stat.second}
+               процент правильных: $percent%
+            """.trimIndent())
         }
         onText(initialFilter = CommonMessageFilterExcludeCommand()) {
             val text = it.text!!
 
-            if (WordType.fromFullName(text) == (Storage.getType(it.from!!))) {
+            val next = Storage.getNext(it.from!!)
+            val correct = WordType.fromFullName(text) == next.second
+            Statistic.add(it.from!!, next.first, correct)
+            if (correct) {
                 sendTextMessage(it.chat, "Правильно")
                 sendWord(this, it.from)
             } else {
@@ -92,7 +106,7 @@ suspend fun sendWord(bot: TelegramBot, chat: User?) {
     WordMapper.markWord(next.first, WordStatus.APPROVED)
     KSLog.info("mark word ${next.first} as approved")
 
-    Storage.setType(chat, next.second)
+    Storage.setNext(chat, next)
     val word = next.first
     bot.send(chat, text = word, replyMarkup = keyboards[difficult])
     KSLog.info("${chat.id.chatId.long} $word ${next.second.fullName} $difficult")
@@ -103,15 +117,20 @@ val easy = replyKeyboard {
     row { simpleButton(WordType.VERB.fullName) }
 }
 val medium = replyKeyboard {
-    row { simpleButton(WordType.NOUN.fullName); simpleButton(WordType.ADJECTIVE.fullName) }
-    row { simpleButton(WordType.VERB.fullName); simpleButton(WordType.ADVERB.fullName) }
-    row { simpleButton(WordType.NUMERAL.fullName); simpleButton(WordType.PRONOUN.fullName) }
-    row { simpleButton(WordType.CONJUNCTION.fullName); simpleButton(WordType.PREPOSITION.fullName) }
-    row { simpleButton(WordType.PARTICLE.fullName); simpleButton(WordType.INTERJECTION.fullName) }
+    row { simpleButton(WordType.NOUN.fullName);         simpleButton(WordType.ADJECTIVE.fullName) }
+    row { simpleButton(WordType.VERB.fullName);         simpleButton(WordType.ADVERB.fullName) }
+    row { simpleButton(WordType.PRONOUN.fullName);      simpleButton(WordType.CONJUNCTION.fullName) }
+    row { simpleButton(WordType.PREPOSITION.fullName);  simpleButton(WordType.PARTICLE.fullName) }
+    row { simpleButton(WordType.INTERJECTION.fullName) }
 }
-val hard = ReplyKeyboardMarkup(medium.keyboard + replyKeyboard {
-    row { simpleButton(WordType.PARTICIPLE.fullName); simpleButton(WordType.PARTICIPLE_ADJECTIVE.fullName) }
-}.keyboard)
+val hard = replyKeyboard {
+    row { simpleButton(WordType.NOUN.fullName);         simpleButton(WordType.ADJECTIVE.fullName) }
+    row { simpleButton(WordType.VERB.fullName);         simpleButton(WordType.ADVERB.fullName) }
+    row { simpleButton(WordType.PRONOUN.fullName);      simpleButton(WordType.CONJUNCTION.fullName) }
+    row { simpleButton(WordType.PREPOSITION.fullName);  simpleButton(WordType.PARTICLE.fullName) }
+    row { simpleButton(WordType.PARTICIPLE.fullName);   simpleButton(WordType.INTERJECTION.fullName) }
+    row { simpleButton(WordType.PARTICIPLE_ADJECTIVE.fullName) }
+}
 
 val keyboards = mapOf(
     Difficult.EASY to easy,
