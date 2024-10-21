@@ -14,7 +14,6 @@ object Storage {
             return@run Difficult.MEDIUM
         }
 
-
     suspend fun setNext(user: User, next: Pair<String, WordType>) {
         redisClient.hset(user.rowId().toString(), Pair("type", next.second.name))
         redisClient.hset(user.rowId().toString(), Pair("word", next.first))
@@ -23,5 +22,9 @@ object Storage {
         redisClient.hget(user.rowId().toString(), "word")!!,
         redisClient.hget(user.rowId().toString(), "type")?.let{ WordType.valueOf(it) }!!
     )
+
+    suspend fun appendCorrect(user: User, word: String) = redisClient.lpush("${user.rowId()}_correct", word)
+    suspend fun correctSize(user: User) = redisClient.llen("${user.rowId()}_correct").toInt()
+    suspend fun clearCorrect(user: User) = redisClient.del("${user.rowId()}_correct")
 
 }

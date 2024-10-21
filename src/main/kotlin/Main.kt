@@ -78,10 +78,16 @@ suspend fun main() {
             val correct = WordType.fromFullName(text) == next.second
             Statistic.add(it.from!!, next.first, correct)
             if (correct) {
+                Storage.appendCorrect(it.from!!, next.first)
                 sendTextMessage(it.chat, "Правильно")
+                val size = Storage.correctSize(it.from!!)
+                if (Achievement.isAchievement(size)) {
+                    sendTextMessage(it.chat, "Серия из $size слов")
+                }
                 sendWord(this, it.from)
             } else {
                 sendTextMessage(it.chat, "Неправильно")
+                Storage.clearCorrect(it.from!!)
             }
         }
     }.second.join()
