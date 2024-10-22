@@ -102,10 +102,12 @@ suspend fun sendWord(bot: TelegramBot, chat: User?) {
             next = WordMapper.getRandomWord(difficult)
             isIgnore = Gemini.isValid(next.first)
         }
-    }
-    WordMapper.markWord(next.first, WordStatus.APPROVED)
-    KSLog.info("mark word ${next.first} as approved")
 
+        WordMapper.markWord(next.first, WordStatus.APPROVED)
+        KSLog.info("mark word ${next.first} as approved")
+    } else {
+        KSLog.info("already approved ${next.first}")
+    }
     Storage.setNext(chat, next)
     val word = next.first
     bot.send(chat, text = word, replyMarkup = keyboards[difficult])
