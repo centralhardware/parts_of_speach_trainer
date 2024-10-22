@@ -12,11 +12,10 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     maven("https://jitpack.io")
-    maven("https://nexus.inmo.dev/repository/maven-releases/")
 }
 
 dependencies {
-    implementation("dev.inmo:tgbotapi:18.2.2-branch_18.2.2-build2465")
+    implementation("dev.inmo:tgbotapi:18.2.2")
     implementation("com.github.centralhardware:telegram-bot-commons:af3541d290")
     implementation("com.github.seratch:kotliquery:1.9.0")
     implementation("org.postgresql:postgresql:42.7.4")
