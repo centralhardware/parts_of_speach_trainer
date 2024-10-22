@@ -33,22 +33,16 @@ suspend fun main() {
             BotCommand("ignore", "добавить слово в игнор")
         )
         onCommand("start") {
-            sendWord(this, it.from)
+            sendWord(this, it.from!!.id)
         }
         onCommand("easy") {
-            Storage.setDifficult(it.from!!, Difficult.EASY)
-            sendTextMessage(it.chat, "Установлено")
-            sendWord(this, it.from)
+            changeMode(this, it.from!!.id, Difficult.EASY)
         }
         onCommand("medium") {
-            Storage.setDifficult(it.from!!, Difficult.MEDIUM)
-            sendTextMessage(it.chat, "Установлено")
-            sendWord(this, it.from)
+            changeMode(this, it.from!!.id, Difficult.MEDIUM)
         }
         onCommand("hard") {
-            Storage.setDifficult(it.from!!, Difficult.HARD)
-            sendTextMessage(it.chat, "Установлено")
-            sendWord(this, it.from)
+            changeMode(this, it.from!!.id, Difficult.HARD)
         }
         onCommandWithArgs("ignore") { msg, args ->
             if (args.size == 1) {
@@ -65,17 +59,18 @@ suspend fun main() {
         onText(initialFilter = CommonMessageFilterExcludeCommand()) {
             val text = it.text!!
 
-            val next = Storage.getNext(it.from!!)
+            val next = Storage.getNext(it.from!!.id)
             val correct = WordType.fromFullName(text) == next.second
             Statistic.add(it.from!!, next.first, correct)
             if (correct) {
                 Storage.appendCorrect(it.from!!, next.first)
-                sendTextMessage(it.chat, "Правильно")
                 val size = Storage.correctSize(it.from!!)
                 if (Achievement.isAchievement(size)) {
-                    sendTextMessage(it.chat, "Серия из $size слов")
+                    sendTextMessage(it.chat, "Правильно. Серия правильных ответов - $size слов")
+                } else {
+                    sendTextMessage(it.chat, "Правильно")
                 }
-                sendWord(this, it.from)
+                sendWord(this, it.from!!.id)
             } else {
                 sendTextMessage(it.chat, "Неправильно")
                 Storage.clearCorrect(it.from!!)
@@ -87,9 +82,9 @@ suspend fun main() {
     }.second.join()
 }
 
-suspend fun sendWord(bot: TelegramBot, chat: User?) {
-    bot.sendActionTyping(chat!!)
-    val difficult = Storage.getDifficult(chat)
+suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
+    bot.sendActionTyping(chatId)
+    val difficult = Storage.getDifficult(chatId)
     var next: Pair<String, WordType>? = WordMapper.getRandomWord(difficult)
     if (WordMapper.isNotValid(next!!.first)) {
         var isIgnore = Gemini.isValid(next.first)
@@ -105,13 +100,13 @@ suspend fun sendWord(bot: TelegramBot, chat: User?) {
 
         WordMapper.markWord(next.first, WordStatus.APPROVED)
         KSLog.info("mark word ${next.first} as approved")
-    } else {
+    } else{
         KSLog.info("already approved ${next.first}")
     }
-    Storage.setNext(chat, next)
+    Storage.setNext(chatId, next)
     val word = next.first
-    bot.send(chat, text = word, replyMarkup = keyboards[difficult])
-    KSLog.info("${chat.id.chatId.long} $word ${next.second.fullName} $difficult")
+    bot.send(chatId, text = word, replyMarkup = keyboards[difficult])
+    KSLog.info("${chatId.chatId.long} $word ${next.second.fullName} $difficult")
 }
 
 suspend fun sendStatistic(bot: TelegramBot, chat: ChatId) {
@@ -126,6 +121,12 @@ suspend fun sendStatistic(bot: TelegramBot, chat: ChatId) {
                неправильно: ${stat.second}
                процент правильных: $percent%
             """.trimIndent())
+}
+
+suspend fun changeMode(bot: TelegramBot, chat: ChatId, mode: Difficult) {
+    Storage.setDifficult(chat, mode)
+    bot.sendTextMessage(chat, "Установлено")
+    sendWord(bot, chat)
 }
 
 val easy = replyKeyboard {
