@@ -7,24 +7,24 @@ object Storage {
     val redisClient = newClient(Endpoint.from(System.getenv("REDIS_URL")))
 
     suspend fun setDifficult(user: User, difficult: Difficult) =
-        redisClient.hset(user.rowId().toString(), Pair("difficult", difficult.name))
+        redisClient.hset(user.rawId().toString(), Pair("difficult", difficult.name))
     suspend fun getDifficult(user: User): Difficult =
-        redisClient.hget(user.rowId().toString(), "difficult")?.let{ Difficult.valueOf(it) }?: run {
+        redisClient.hget(user.rawId().toString(), "difficult")?.let{ Difficult.valueOf(it) }?: run {
             setDifficult(user, Difficult.MEDIUM)
             return@run Difficult.MEDIUM
         }
 
     suspend fun setNext(user: User, next: Pair<String, WordType>) {
-        redisClient.hset(user.rowId().toString(), Pair("type", next.second.name))
-        redisClient.hset(user.rowId().toString(), Pair("word", next.first))
+        redisClient.hset(user.rawId().toString(), Pair("type", next.second.name))
+        redisClient.hset(user.rawId().toString(), Pair("word", next.first))
     }
     suspend fun getNext(user: User) = Pair(
-        redisClient.hget(user.rowId().toString(), "word")!!,
-        redisClient.hget(user.rowId().toString(), "type")?.let{ WordType.valueOf(it) }!!
+        redisClient.hget(user.rawId().toString(), "word")!!,
+        redisClient.hget(user.rawId().toString(), "type")?.let{ WordType.valueOf(it) }!!
     )
 
-    suspend fun appendCorrect(user: User, word: String) = redisClient.lpush("${user.rowId()}_correct", word)
-    suspend fun correctSize(user: User) = redisClient.llen("${user.rowId()}_correct").toInt()
-    suspend fun clearCorrect(user: User) = redisClient.del("${user.rowId()}_correct")
+    suspend fun appendCorrect(user: User, word: String) = redisClient.lpush("${user.rawId()}_correct", word)
+    suspend fun correctSize(user: User) = redisClient.llen("${user.rawId()}_correct").toInt()
+    suspend fun clearCorrect(user: User) = redisClient.del("${user.rawId()}_correct")
 
 }

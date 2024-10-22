@@ -16,6 +16,7 @@ import dev.inmo.tgbotapi.extensions.utils.types.buttons.replyKeyboard
 import dev.inmo.tgbotapi.extensions.utils.types.buttons.simpleButton
 import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.BotCommand
+import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.chat.User
 import dev.inmo.tgbotapi.utils.RiskFeature
 import dev.inmo.tgbotapi.utils.row
@@ -59,17 +60,7 @@ suspend fun main() {
             }
         }
         onCommand("stat") {
-            val stat = Statistic.getStatistic(it.from!!)
-            val percent = if (stat.second != 0) {
-                (stat.first / stat.second * 100).coerceAtMost(100)
-            } else {
-                0
-            }
-            sendTextMessage(it.chat, """
-               правильно: ${stat.first}
-               неправильно: ${stat.second}
-               процент правильных: $percent%
-            """.trimIndent())
+            sendStatistic(this, it.from?.id!!)
         }
         onText(initialFilter = CommonMessageFilterExcludeCommand()) {
             val text = it.text!!
@@ -89,6 +80,9 @@ suspend fun main() {
                 sendTextMessage(it.chat, "Неправильно")
                 Storage.clearCorrect(it.from!!)
             }
+        }
+        Statistic.addListener { id ->
+            sendStatistic(this, id)
         }
     }.second.join()
 }
@@ -116,6 +110,20 @@ suspend fun sendWord(bot: TelegramBot, chat: User?) {
     val word = next.first
     bot.send(chat, text = word, replyMarkup = keyboards[difficult])
     KSLog.info("${chat.id.chatId.long} $word ${next.second.fullName} $difficult")
+}
+
+suspend fun sendStatistic(bot: TelegramBot, chat: ChatId) {
+    val stat = Statistic.getStatistic(chat)
+    val percent = if (stat.second != 0) {
+        (stat.first / stat.second * 100).coerceAtMost(100)
+    } else {
+        0
+    }
+    bot.sendTextMessage(chat, """
+               правильно: ${stat.first}
+               неправильно: ${stat.second}
+               процент правильных: $percent%
+            """.trimIndent())
 }
 
 val easy = replyKeyboard {
