@@ -1,4 +1,5 @@
 import dev.inmo.kslog.common.KSLog
+import dev.inmo.kslog.common.error
 import dev.inmo.kslog.common.info
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -10,16 +11,12 @@ import java.io.IOException
 
 @Serializable
 data class ResponseDTO(
-    val candidates: List<Candidate>,
-    val usageMetadata: UsageMetadata
+    val candidates: List<Candidate>
 )
 
 @Serializable
 data class Candidate(
-    val content: Content,
-    val finishReason: String,
-    val index: Int,
-    val safetyRatings: List<SafetyRating>
+    val content: Content
 )
 
 @Serializable
@@ -33,21 +30,11 @@ data class Part(
     val text: String
 )
 
-@Serializable
-data class SafetyRating(
-    val category: String,
-    val probability: String
-)
-
-@Serializable
-data class UsageMetadata(
-    val promptTokenCount: Int,
-    val candidatesTokenCount: Int?,
-    val totalTokenCount: Int
-)
-
 object Gemini {
 
+    val json = Json {
+        ignoreUnknownKeys = true
+    }
     fun sendPromptToGeminiAI(prompt: String): String {
         val client = OkHttpClient()
 
@@ -73,7 +60,7 @@ object Gemini {
 
         val response = client.newCall(request).execute()
         if (!response.isSuccessful && response.body?.string() == null) throw IOException("Unexpected code $response")
-        val responseDTO = Json.decodeFromString<ResponseDTO>(response.body?.string()!!)
+        val responseDTO = json.decodeFromString<ResponseDTO>(response.body?.string()!!)
 
         return responseDTO.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text!!
     }
@@ -90,6 +77,6 @@ object Gemini {
             res.equals("мат", ignoreCase = true) -> Pair(true, IgnoreReason.SWEAR)
             else -> Pair(false, null)
         }
-    }
+    }.onFailure{ KSLog.error(it) }
 
 }
