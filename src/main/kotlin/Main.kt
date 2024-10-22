@@ -47,9 +47,9 @@ suspend fun main() {
             if (args.size == 1) {
                 WordMapper.markWord(args[0], WordStatus.IGNORE, IgnoreReason.BLOCKED_BY_ADMIN)
                 sendTextMessage(msg.chat, "Сохранено")
-                sendWord(this, msg.from)
+                sendWord(this, msg.from!!.id)
             } else {
-                sendTextMessage(msg.chat, "Неверный формат", replyMarkup = keyboards[Storage.getDifficult(msg.from!!)])
+                sendTextMessage(msg.chat, "Неверный формат", replyMarkup = keyboards[Storage.getDifficult(msg.from!!.id)])
             }
         }
         onCommand("stat") {
