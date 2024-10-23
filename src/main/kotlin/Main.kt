@@ -12,13 +12,10 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onComman
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onText
 import dev.inmo.tgbotapi.extensions.utils.extensions.raw.from
 import dev.inmo.tgbotapi.extensions.utils.extensions.raw.text
-import dev.inmo.tgbotapi.extensions.utils.types.buttons.replyKeyboard
-import dev.inmo.tgbotapi.extensions.utils.types.buttons.simpleButton
 import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.BotCommand
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.utils.RiskFeature
-import dev.inmo.tgbotapi.utils.row
 
 @OptIn(RiskFeature::class)
 suspend fun main() {
@@ -65,7 +62,7 @@ suspend fun main() {
                 Storage.appendCorrect(it.from!!, next.first)
                 val size = Storage.correctSize(it.from!!)
                 if (Achievement.isAchievement(size)) {
-                    sendTextMessage(it.chat, "Правильно. Серия правильных ответов - $size слов")
+                    sendTextMessage(it.chat, "Правильно. Серия - $size слов")
                 } else {
                     sendTextMessage(it.chat, "Правильно")
                 }
@@ -111,14 +108,14 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
 suspend fun sendStatistic(bot: TelegramBot, chat: ChatId) {
     val stat = Statistic.getStatistic(chat)
     val percent = if (stat.second != 0) {
-        (stat.first / stat.second * 100).coerceAtMost(100)
+        (stat.second/stat.first * 100).coerceAtMost(100)
     } else {
         0
     }
     bot.sendTextMessage(chat, """
                правильно: ${stat.first}
                неправильно: ${stat.second}
-               процент правильных: $percent%
+               процент ошибок: $percent%
             """.trimIndent())
 }
 
@@ -127,29 +124,3 @@ suspend fun changeMode(bot: TelegramBot, chat: ChatId, mode: Difficult) {
     bot.sendTextMessage(chat, "Установлено")
     sendWord(bot, chat)
 }
-
-val easy = replyKeyboard {
-    row { simpleButton(WordType.NOUN.fullName); simpleButton(WordType.ADJECTIVE.fullName) }
-    row { simpleButton(WordType.VERB.fullName) }
-}
-val medium = replyKeyboard {
-    row { simpleButton(WordType.NOUN.fullName);         simpleButton(WordType.ADJECTIVE.fullName) }
-    row { simpleButton(WordType.VERB.fullName);         simpleButton(WordType.ADVERB.fullName) }
-    row { simpleButton(WordType.PRONOUN.fullName);      simpleButton(WordType.CONJUNCTION.fullName) }
-    row { simpleButton(WordType.PREPOSITION.fullName);  simpleButton(WordType.PARTICLE.fullName) }
-    row { simpleButton(WordType.INTERJECTION.fullName) }
-}
-val hard = replyKeyboard {
-    row { simpleButton(WordType.NOUN.fullName);         simpleButton(WordType.ADJECTIVE.fullName) }
-    row { simpleButton(WordType.VERB.fullName);         simpleButton(WordType.ADVERB.fullName) }
-    row { simpleButton(WordType.PRONOUN.fullName);      simpleButton(WordType.CONJUNCTION.fullName) }
-    row { simpleButton(WordType.PREPOSITION.fullName);  simpleButton(WordType.PARTICLE.fullName) }
-    row { simpleButton(WordType.PARTICIPLE.fullName);   simpleButton(WordType.INTERJECTION.fullName) }
-    row { simpleButton(WordType.PARTICIPLE_ADJECTIVE.fullName) }
-}
-
-val keyboards = mapOf(
-    Difficult.EASY to easy,
-    Difficult.MEDIUM to medium,
-    Difficult.HARD to hard,
-)

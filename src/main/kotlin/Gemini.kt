@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 
 @Serializable
@@ -21,8 +21,7 @@ data class Candidate(
 
 @Serializable
 data class Content(
-    val parts: List<Part>,
-    val role: String
+    val parts: List<Part>
 )
 
 @Serializable
@@ -41,7 +40,6 @@ object Gemini {
         // URL для обращения к API (включает API-ключ)
         val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${System.getenv("GEMINI_TOKEN")}"
 
-        // Тело запроса с промтом
         val requestBody = """
         {
           "contents": [{
@@ -50,12 +48,12 @@ object Gemini {
             }]
           }]
         }
-    """.trimIndent()
+        """
 
         val request = Request.Builder()
             .url(url)
             .addHeader("Content-Type", "application/json")
-            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody))
+            .post(requestBody.toRequestBody("application/json".toMediaTypeOrNull()))
             .build()
 
         val response = client.newCall(request).execute()
@@ -69,7 +67,7 @@ object Gemini {
     fun isValid(word: String): Result<Pair<Boolean, IgnoreReason?>> = runCatching {
         val res = sendPromptToGeminiAI("Необходимо определить является ли слово профессионализм или архаизмом или матом. Отвечай одним словом. Отвечай - когда слово не подходит под эти категории. Отвечай только когда сто процентно уверен. Всегда отвечай вариантами: архаизм|профессионализм|мат Слово: $word")
             .replace("\n", "").replace(" ", "")
-        KSLog.info("gemin answer for word $word $res")
+        KSLog.info("gemini >> $word $res")
 
         return@runCatching when {
             res.equals("архаизм", ignoreCase = true) -> Pair(true, IgnoreReason.ARCHAISM)

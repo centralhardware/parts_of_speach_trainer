@@ -12,7 +12,7 @@ object Statistic {
     }
 
     fun getStatistic(user: ChatId): Pair<Int, Int> {
-        val stat = cache.getElementsByKey1(user.rawId()).groupBy{ it.first }.mapValues { entry ->
+        val stat = cache.getElementsByFirst(user.rawId()).groupBy{ it.first }.mapValues { entry ->
             entry.value.any{ !it.second }
         }
         val correct = stat.count{ !it.value }
