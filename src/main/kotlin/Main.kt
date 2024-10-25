@@ -1,3 +1,5 @@
+import com.github.michaelbull.retry.policy.stopAtAttempts
+import com.github.michaelbull.retry.retry
 import dev.inmo.kslog.common.KSLog
 import dev.inmo.kslog.common.info
 import dev.inmo.tgbotapi.AppConfig
@@ -83,7 +85,9 @@ suspend fun main() {
 suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     bot.sendActionTyping(chatId)
     val difficult = Storage.getDifficult(chatId)
-    var next: Pair<String, WordType>? = WordMapper.getRandomWord(difficult)
+    var next: Pair<String, WordType>? = retry(stopAtAttempts(4)) {
+        WordMapper.getRandomWord(difficult)
+    }
     if (WordMapper.isNotValid(next!!.first)) {
         var isIgnore = Gemini.isValid(next.first)
         while (isIgnore.getOrNull()?.first == true) {
