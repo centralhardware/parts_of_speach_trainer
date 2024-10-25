@@ -114,7 +114,7 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
 suspend fun sendStatistic(bot: TelegramBot, chat: ChatId) {
     val stat = Statistic.getStatistic(chat)
     val percent = if (stat.second != 0) {
-        (stat.second/stat.first * 100).coerceAtMost(100)
+        (stat.second.toDouble()/stat.first * 100).toInt().coerceAtMost(100)
     } else {
         0
     }
