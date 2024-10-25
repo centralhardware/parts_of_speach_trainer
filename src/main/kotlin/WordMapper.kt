@@ -11,11 +11,9 @@ object WordMapper {
             WITH RandomType AS (
                 SELECT part_of_speech as type
                 FROM entry
-                WHERE (CASE 
-                        WHEN :difficult = 'EASY' THEN part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB')
-                        WHEN :difficult = 'MEDIUM' THEN part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION')
-                        WHEN :difficult = 'HARD' THEN part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION', 'PARTICIPLE', 'PARTICIPLE_ADJECTIVE')
-                END)
+                WHERE (:difficult = 'EASY' AND part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB'))
+                    OR (:difficult = 'MEDIUM' AND part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION'))
+                    OR (:difficult = 'HARD' AND part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION', 'PARTICIPLE', 'PARTICIPLE_ADJECTIVE'))
                 GROUP BY part_of_speech
                 ORDER BY RANDOM()
                 LIMIT 1
@@ -23,11 +21,9 @@ object WordMapper {
             SELECT written_rep, part_of_speech
             FROM entry
             WHERE part_of_speech = (SELECT type FROM RandomType) 
-                AND (CASE 
-                        WHEN :difficult = 'EASY' THEN part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB')
-                        WHEN :difficult = 'MEDIUM' THEN part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION')
-                        WHEN :difficult = 'HARD' THEN part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION', 'PARTICIPLE', 'PARTICIPLE_ADJECTIVE')
-                END)
+                AND ((:difficult = 'EASY' AND part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB'))
+                    OR (:difficult = 'MEDIUM' AND part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION'))
+                    OR (:difficult = 'HARD' AND part_of_speech IN ('NOUN', 'ADJECTIVE', 'VERB', 'ADVERB', 'PRONOUN', 'CONJUNCTION', 'PREPOSITION', 'PARTICLE', 'INTERJECTION', 'PARTICIPLE', 'PARTICIPLE_ADJECTIVE')))
                 AND status != 'IGNORE'
             ORDER BY RANDOM()
             LIMIT 1;
