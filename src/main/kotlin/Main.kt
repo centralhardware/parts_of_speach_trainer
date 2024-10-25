@@ -15,6 +15,8 @@ import dev.inmo.tgbotapi.extensions.utils.extensions.raw.text
 import dev.inmo.tgbotapi.longPolling
 import dev.inmo.tgbotapi.types.BotCommand
 import dev.inmo.tgbotapi.types.ChatId
+import dev.inmo.tgbotapi.types.LinkPreviewOptions
+import dev.inmo.tgbotapi.types.message.MarkdownParseMode
 import dev.inmo.tgbotapi.utils.RiskFeature
 
 @OptIn(RiskFeature::class)
@@ -101,7 +103,7 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     }
     Storage.setNext(chatId, next)
     val word = next.first
-    bot.send(chatId, text = word, replyMarkup = keyboards[difficult])
+    bot.send(chatId, text = "$word[?](https://ru.wiktionary.org/wiki/$word)", parseMode = MarkdownParseMode, linkPreviewOptions = LinkPreviewOptions.Disabled, replyMarkup = keyboards[difficult])
     KSLog.info("${chatId.chatId.long} $word ${next.second.fullName} $difficult")
 }
 

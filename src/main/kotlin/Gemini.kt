@@ -38,7 +38,7 @@ object Gemini {
         val client = OkHttpClient()
 
         // URL для обращения к API (включает API-ключ)
-        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${System.getenv("GEMINI_TOKEN")}"
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${System.getenv("GEMINI_TOKEN")}"
 
         val requestBody = """
         {
@@ -65,7 +65,7 @@ object Gemini {
 
 
     fun isValid(word: String): Result<Pair<Boolean, IgnoreReason?>> = runCatching {
-        val res = sendPromptToGeminiAI("Необходимо определить является ли слово профессионализм или архаизмом или матом. Отвечай одним словом. Отвечай - когда слово не подходит под эти категории. Отвечай только когда сто процентно уверен. Всегда отвечай вариантами: архаизм|профессионализм|мат Слово: $word")
+        val res = sendPromptToGeminiAI("Необходимо определить, является ли слово профессионализмом, архаизмом (включая устаревшие формы слова) или матом. Ответь одним из вариантов: архаизм | профессионализм | мат. Если слово не относится ни к одной категории, отвечай словом '-'. Имена собственные всегда записывай в профессионализм. Слово: $word")
             .replace("\n", "").replace(" ", "")
         KSLog.info("gemini >> $word $res")
 
