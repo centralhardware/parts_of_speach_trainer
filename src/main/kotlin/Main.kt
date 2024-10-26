@@ -20,6 +20,8 @@ import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.LinkPreviewOptions
 import dev.inmo.tgbotapi.types.message.MarkdownParseMode
 import dev.inmo.tgbotapi.utils.RiskFeature
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @OptIn(RiskFeature::class)
 suspend fun main() {
@@ -64,7 +66,8 @@ suspend fun main() {
                     } else {
                         sendTextMessage(it.chat, "Правильно")
                     }
-                    sendWord(this, it.from!!.id)
+                    val bot = this
+                    GlobalScope.launch { sendWord(bot, it.from!!.id) }
                 } else {
                     sendTextMessage(
                         it.chat,
