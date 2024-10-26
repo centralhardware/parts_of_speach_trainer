@@ -86,6 +86,7 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     bot.sendActionTyping(chatId)
     val difficult = Storage.getDifficult(chatId)
     var next: Pair<String, WordType>? = retry(stopAtAttempts(4)) {
+        KSLog.info("trying to get random word")
         WordMapper.getRandomWord(difficult)
     }
     if (WordMapper.isNotValid(next!!.first)) {
@@ -96,7 +97,10 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
                 KSLog.info("mark word ${next.first} as ignored")
             }
 
-            next = WordMapper.getRandomWord(difficult)
+            next = retry(stopAtAttempts(4)) {
+                KSLog.info("trying to get random word")
+                WordMapper.getRandomWord(difficult)
+            }
             isIgnore = Gemini.isValid(next.first)
         }
 
@@ -107,7 +111,7 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     }
     Storage.setNext(chatId, next)
     val word = next.first
-    bot.send(chatId, text = "$word[?](https://ru.wiktionary.org/wiki/$word)", parseMode = MarkdownParseMode, linkPreviewOptions = LinkPreviewOptions.Disabled, replyMarkup = keyboards[difficult])
+    bot.send(chatId, text = "$word.[знач](https://ru.wiktionary.org/wiki/$word)", parseMode = MarkdownParseMode, linkPreviewOptions = LinkPreviewOptions.Disabled, replyMarkup = keyboards[difficult])
     KSLog.info("${chatId.chatId.long} $word ${next.second.fullName} $difficult")
 }
 
