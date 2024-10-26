@@ -12,7 +12,8 @@ enum class WordType(val fullName: String) {
     PARTICLE("частица");
     companion object {
         fun fromFullName(fullName: String): WordType {
-            return values().find { it.fullName == fullName }?: throw IllegalArgumentException("$fullName not found")
+            return values().find { it.fullName == fullName }
+                ?: throw IllegalArgumentException("$fullName not found")
         }
     }
 }

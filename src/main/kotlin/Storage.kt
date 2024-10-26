@@ -10,22 +10,24 @@ object Storage {
     suspend fun setDifficult(chatId: ChatId, difficult: Difficult) =
         redisClient.hset(chatId.rawId().toString(), Pair("difficult", difficult.name))
     suspend fun getDifficult(chatId: ChatId): Difficult =
-        redisClient.hget(chatId.rawId().toString(), "difficult")?.let{ Difficult.valueOf(it) }?: run {
-            setDifficult(chatId, Difficult.MEDIUM)
-            return@run Difficult.MEDIUM
-        }
+        redisClient.hget(chatId.rawId().toString(), "difficult")?.let { Difficult.valueOf(it) }
+            ?: run {
+                setDifficult(chatId, Difficult.MEDIUM)
+                return@run Difficult.MEDIUM
+            }
 
     suspend fun setNext(chatId: ChatId, next: Pair<String, WordType>) {
         redisClient.hset(chatId.rawId().toString(), Pair("type", next.second.name))
         redisClient.hset(chatId.rawId().toString(), Pair("word", next.first))
     }
-    suspend fun getNext(chatId: ChatId) = Pair(
-        redisClient.hget(chatId.rawId().toString(), "word")!!,
-        redisClient.hget(chatId.rawId().toString(), "type")?.let{ WordType.valueOf(it) }!!
-    )
+    suspend fun getNext(chatId: ChatId) =
+        Pair(
+            redisClient.hget(chatId.rawId().toString(), "word")!!,
+            redisClient.hget(chatId.rawId().toString(), "type")?.let { WordType.valueOf(it) }!!
+        )
 
-    suspend fun appendCorrect(user: User, word: String) = redisClient.lpush("${user.rawId()}_correct", word)
+    suspend fun appendCorrect(user: User, word: String) =
+        redisClient.lpush("${user.rawId()}_correct", word)
     suspend fun correctSize(user: User) = redisClient.llen("${user.rawId()}_correct").toInt()
     suspend fun clearCorrect(user: User) = redisClient.del("${user.rawId()}_correct")
-
 }

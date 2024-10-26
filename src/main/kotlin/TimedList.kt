@@ -1,11 +1,11 @@
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import kotlinx.coroutines.runBlocking
 import java.time.Instant
 import java.util.LinkedList
+import korlibs.time.milliseconds
+import korlibs.time.seconds
 import kotlin.concurrent.thread
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.runBlocking
 
 class TimedList<K1, K2, T>(private val expirationTime: Duration) {
     private val list = LinkedList<Pair<Pair<K1, K2>, Pair<T, Instant>>>()
@@ -15,11 +15,8 @@ class TimedList<K1, K2, T>(private val expirationTime: Duration) {
             while (true) {
                 Thread.sleep(10.seconds.toJavaDuration())
                 synchronized(list) {
-                    runBlocking{
-                        list.map { it.first.first }.toSet()
-                            .forEach { key ->
-                            dropLastRecords(key)
-                        }
+                    runBlocking {
+                        list.map { it.first.first }.toSet().forEach { key -> dropLastRecords(key) }
                     }
                 }
             }
@@ -35,20 +32,18 @@ class TimedList<K1, K2, T>(private val expirationTime: Duration) {
     }
 
     fun getElementsByFirst(key1: K1): List<Pair<K2, T>> {
-        return list
-            .filter { it.first.first == key1 }
-            .map { Pair(it.first.second, it.second.first) }
+        return list.filter { it.first.first == key1 }.map { Pair(it.first.second, it.second.first) }
     }
 
     private suspend fun dropLastRecords(key: K1) {
-        val elem = list.filter{ it.first.first == key }
-        if (elem.isNotEmpty() &&
-            (Instant.now().toEpochMilli() - elem.last().second.second.toEpochMilli() > expirationTime.milliseconds)) {
+        val elem = list.filter { it.first.first == key }
+        if (
+            elem.isNotEmpty() &&
+                (Instant.now().toEpochMilli() - elem.last().second.second.toEpochMilli() >
+                    expirationTime.milliseconds)
+        ) {
             listeners.forEach { it.invoke(key) }
-            list.removeIf{
-                it.first.first == key
-            }
+            list.removeIf { it.first.first == key }
         }
     }
-
 }
