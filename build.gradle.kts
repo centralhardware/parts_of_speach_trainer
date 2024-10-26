@@ -4,6 +4,14 @@ plugins {
     kotlin("jvm") version "2.0.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("plugin.serialization") version "2.0.21"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+}
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    verbose.set(true)
+    outputToConsole.set(true)
+    outputColorName.set("RED")
+    enableExperimentalRules.set(true)
 }
 
 group = "me.centralhardware.telegram"
@@ -25,7 +33,7 @@ dependencies {
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 }
 
-    tasks.test {
+tasks.test {
     useJUnitPlatform()
 }
 
