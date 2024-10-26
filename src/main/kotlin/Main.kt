@@ -66,7 +66,12 @@ suspend fun main() {
                     }
                     sendWord(this, it.from!!.id)
                 } else {
-                    sendTextMessage(it.chat, "Неправильно")
+                    sendTextMessage(
+                        it.chat,
+                        "Неправильно. [знач. ${next.first}](https://ru.wiktionary.org/wiki/${next.first})",
+                        parseMode = MarkdownParseMode,
+                        linkPreviewOptions = LinkPreviewOptions.Disabled
+                    )
                     Storage.clearCorrect(it.from!!)
                 }
             }
@@ -77,6 +82,7 @@ suspend fun main() {
 }
 
 suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
+    Storage.clearNext(chatId)
     bot.sendActionTyping(chatId)
     val difficult = Storage.getDifficult(chatId)
     var next: Pair<String, WordType>? =
@@ -107,13 +113,7 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     }
     Storage.setNext(chatId, next)
     val word = next.first
-    bot.send(
-        chatId,
-        text = "$word.[знач](https://ru.wiktionary.org/wiki/$word)",
-        parseMode = MarkdownParseMode,
-        linkPreviewOptions = LinkPreviewOptions.Disabled,
-        replyMarkup = keyboards[difficult]
-    )
+    bot.send(chatId, text = word, replyMarkup = keyboards[difficult])
     KSLog.info("${chatId.chatId.long} $word ${next.second.fullName} $difficult")
 }
 

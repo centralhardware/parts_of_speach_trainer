@@ -25,6 +25,9 @@ object Storage {
             redisClient.hget(chatId.rawId().toString(), "word")!!,
             redisClient.hget(chatId.rawId().toString(), "type")?.let { WordType.valueOf(it) }!!
         )
+    suspend fun clearNext(chatId: ChatId) {
+        redisClient.del(chatId.rawId().toString())
+    }
 
     suspend fun appendCorrect(user: User, word: String) =
         redisClient.lpush("${user.rawId()}_correct", word)
