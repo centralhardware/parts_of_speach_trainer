@@ -10,6 +10,7 @@ enum class WordType(val fullName: String) {
     CONJUNCTION("союз"),
     NOUN("существительное"),
     PARTICLE("частица");
+
     companion object {
         fun fromFullName(fullName: String): WordType {
             return values().find { it.fullName == fullName }

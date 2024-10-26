@@ -32,7 +32,7 @@ suspend fun main() {
                 BotCommand("easy", "Легкая сложность"),
                 BotCommand("medium", "Средний уровень сложности"),
                 BotCommand("hard", "Тяжелая сложность"),
-                BotCommand("ignore", "добавить слово в игнор")
+                BotCommand("ignore", "добавить слово в игнор"),
             )
             onCommand("start") { sendWord(this, it.from!!.id) }
             onCommand("easy") { changeMode(this, it.from!!.id, Difficult.EASY) }
@@ -47,7 +47,7 @@ suspend fun main() {
                     sendTextMessage(
                         msg.chat,
                         "Неверный формат",
-                        replyMarkup = keyboards[Storage.getDifficult(msg.from!!.id)]
+                        replyMarkup = keyboards[Storage.getDifficult(msg.from!!.id)],
                     )
                 }
             }
@@ -73,7 +73,7 @@ suspend fun main() {
                         it.chat,
                         "Неправильно. [знач. ${next.first}](https://ru.wiktionary.org/wiki/${next.first})",
                         parseMode = MarkdownParseMode,
-                        linkPreviewOptions = LinkPreviewOptions.Disabled
+                        linkPreviewOptions = LinkPreviewOptions.Disabled,
                     )
                     Storage.clearCorrect(it.from!!)
                 }
@@ -134,8 +134,8 @@ suspend fun sendStatistic(bot: TelegramBot, chat: ChatId) {
                правильно: ${stat.first}
                неправильно: ${stat.second}
                процент ошибок: $percent%
-            """.trimIndent(
-        )
+            """
+            .trimIndent(),
     )
 }
 

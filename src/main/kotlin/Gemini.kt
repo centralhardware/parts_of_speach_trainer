@@ -20,6 +20,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 object Gemini {
 
     val json = Json { ignoreUnknownKeys = true }
+
     fun sendPromptToGeminiAI(prompt: String): String {
         val client = OkHttpClient()
 

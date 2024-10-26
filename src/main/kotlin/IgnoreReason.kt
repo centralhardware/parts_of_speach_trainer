@@ -3,5 +3,5 @@ enum class IgnoreReason {
     PROFESSIONALISM,
     ARCHAISM,
     NONE,
-    BLOCKED_BY_ADMIN
+    BLOCKED_BY_ADMIN,
 }

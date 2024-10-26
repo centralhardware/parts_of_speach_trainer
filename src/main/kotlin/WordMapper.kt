@@ -7,8 +7,9 @@ object WordMapper {
         sessionOf(
             System.getenv("POSTGRES_URL"),
             System.getenv("POSTGRES_USERNAME"),
-            System.getenv("POSTGRES_PASSWORD")
+            System.getenv("POSTGRES_PASSWORD"),
         )
+
     fun getRandomWord(difficult: Difficult): Pair<String, WordType> =
         session.run(
             queryOf(
@@ -33,7 +34,7 @@ object WordMapper {
             ORDER BY RANDOM()
             LIMIT 1;
         """,
-                    mapOf("difficult" to difficult.name)
+                    mapOf("difficult" to difficult.name),
                 )
                 .map { row ->
                     Pair(row.string("written_rep"), WordType.valueOf(row.string("part_of_speech")))
@@ -51,7 +52,7 @@ object WordMapper {
             statusdate = now()
         WHERE written_rep = :word
     """,
-                mapOf("word" to word, "status" to status.name, "statusReason" to statusReason.name)
+                mapOf("word" to word, "status" to status.name, "statusReason" to statusReason.name),
             )
         )
 
@@ -61,7 +62,7 @@ object WordMapper {
                     """
            SELECT status != 'APPROVED' as valid FROM entry WHERE written_rep = :word  
         """,
-                    mapOf("word" to word)
+                    mapOf("word" to word),
                 )
                 .map { row -> row.boolean("valid") }
                 .asSingle

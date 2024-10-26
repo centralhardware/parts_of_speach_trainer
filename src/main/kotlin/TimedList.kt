@@ -24,6 +24,7 @@ class TimedList<K1, K2, T>(private val expirationTime: Duration) {
     }
 
     private val listeners = mutableListOf<suspend (id: K1) -> Unit>()
+
     fun addListener(listener: suspend (id: K1) -> Unit) = listeners.add(listener)
 
     suspend fun add(key1: K1, key2: K2, element: T) {

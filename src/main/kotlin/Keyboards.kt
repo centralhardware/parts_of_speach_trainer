@@ -52,9 +52,4 @@ val hard = replyKeyboard {
     row { simpleButton(WordType.PARTICIPLE_ADJECTIVE.fullName) }
 }
 
-val keyboards =
-    mapOf(
-        Difficult.EASY to easy,
-        Difficult.MEDIUM to medium,
-        Difficult.HARD to hard,
-    )
+val keyboards = mapOf(Difficult.EASY to easy, Difficult.MEDIUM to medium, Difficult.HARD to hard)
