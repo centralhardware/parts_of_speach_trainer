@@ -94,12 +94,24 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
             WordMapper.getRandomWord(difficult)
         }
     if (WordMapper.isNotValid(next!!.first)) {
-        var isIgnore = Gemini.isValid(next.first)
-        while (isIgnore.getOrNull()?.first == true) {
-            isIgnore.onSuccess {
-                WordMapper.markWord(next!!.first, WordStatus.IGNORE, isIgnore.getOrThrow().second!!)
-                KSLog.info("mark word ${next.first} as ignored")
+        while (true) {
+            var success = true
+            if (Wikitionary.isNotValid(next!!.first, next.second)) {
+                WordMapper.markWord(next!!.first, WordStatus.IGNORE, IgnoreReason.WIKTIONARY_NOT_FOUND)
+                KSLog.info("mark word ${next.first} as ignored by wikitionary")
+                success = false
+            } else {
+                var isIgnore = Gemini.isValid(next.first)
+                isIgnore.onSuccess {
+                    if (it.first) {
+                        WordMapper.markWord(next!!.first, WordStatus.IGNORE, isIgnore.getOrThrow().second!!)
+                        KSLog.info("mark word ${next.first} as ignored")
+                        success = false
+                    }
+                }
             }
+
+            if (success) break
 
             next =
                 retry(stopAtAttempts(4)) {
