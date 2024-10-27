@@ -19,6 +19,7 @@ import dev.inmo.tgbotapi.types.BotCommand
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.LinkPreviewOptions
 import dev.inmo.tgbotapi.types.message.MarkdownParseMode
+import dev.inmo.tgbotapi.types.toChatId
 import dev.inmo.tgbotapi.utils.RiskFeature
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -78,12 +79,16 @@ suspend fun main() {
                     Storage.clearCorrect(it.from!!)
                 }
             }
-            Statistic.addListener { id -> sendStatistic(this, id) }
+            Statistic.addListener { id ->
+                sendStatistic(this, id)
+                history[id.toChatId()] = mutableSetOf()
+            }
         }
         .second
         .join()
 }
 
+private val history: MutableMap<ChatId, MutableSet<String>> = mutableMapOf()
 suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     Storage.clearNext(chatId)
     bot.sendActionTyping(chatId)
@@ -96,6 +101,11 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     if (WordMapper.isNotValid(next!!.first)) {
         while (true) {
             var success = true
+
+            if (history.getOrPut(chatId){ mutableSetOf() }.contains(next.second)  ) {
+                success = false
+            }
+
             if (Wikitionary.isNotValid(next!!.first, next.second)) {
                 WordMapper.markWord(next!!.first, WordStatus.IGNORE, IgnoreReason.WIKTIONARY_NOT_FOUND)
                 KSLog.info("mark word ${next.first} as ignored by wikitionary")
@@ -128,6 +138,7 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     }
     Storage.setNext(chatId, next)
     val word = next.first
+    history.getOrPut(chatId) { mutableSetOf() }.add(word)
     bot.send(chatId, text = word, replyMarkup = keyboards[difficult])
     KSLog.info("${chatId.chatId.long} $word ${next.second.fullName} $difficult")
 }
