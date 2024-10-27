@@ -107,6 +107,7 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
                         WordMapper.markWord(next!!.first, WordStatus.IGNORE, isIgnore.getOrThrow().second!!)
                         KSLog.info("mark word ${next.first} as ignored")
                         success = false
+                        isIgnore = Gemini.isValid(next.first)
                     }
                 }
             }
@@ -118,7 +119,6 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
                     KSLog.info("trying to get random word")
                     WordMapper.getRandomWord(difficult)
                 }
-            isIgnore = Gemini.isValid(next.first)
         }
 
         WordMapper.markWord(next.first, WordStatus.APPROVED)
