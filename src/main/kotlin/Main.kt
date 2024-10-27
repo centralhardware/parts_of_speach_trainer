@@ -89,6 +89,7 @@ suspend fun main() {
 }
 
 private val history: MutableMap<ChatId, MutableSet<String>> = mutableMapOf()
+
 suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
     Storage.clearNext(chatId)
     bot.sendActionTyping(chatId)
@@ -102,19 +103,27 @@ suspend fun sendWord(bot: TelegramBot, chatId: ChatId) {
         while (true) {
             var success = true
 
-            if (history.getOrPut(chatId){ mutableSetOf() }.contains(next.second)  ) {
+            if (history.getOrPut(chatId) { mutableSetOf() }.contains(next!!.first)) {
                 success = false
             }
 
             if (Wikitionary.isNotValid(next!!.first, next.second)) {
-                WordMapper.markWord(next!!.first, WordStatus.IGNORE, IgnoreReason.WIKTIONARY_NOT_FOUND)
+                WordMapper.markWord(
+                    next!!.first,
+                    WordStatus.IGNORE,
+                    IgnoreReason.WIKTIONARY_NOT_FOUND,
+                )
                 KSLog.info("mark word ${next.first} as ignored by wikitionary")
                 success = false
             } else {
                 var isIgnore = Gemini.isValid(next.first)
                 isIgnore.onSuccess {
                     if (it.first) {
-                        WordMapper.markWord(next!!.first, WordStatus.IGNORE, isIgnore.getOrThrow().second!!)
+                        WordMapper.markWord(
+                            next!!.first,
+                            WordStatus.IGNORE,
+                            isIgnore.getOrThrow().second!!,
+                        )
                         KSLog.info("mark word ${next.first} as ignored")
                         success = false
                         isIgnore = Gemini.isValid(next.first)

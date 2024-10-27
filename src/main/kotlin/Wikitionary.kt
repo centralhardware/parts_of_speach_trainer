@@ -13,13 +13,17 @@ object Wikitionary {
         if (ignoreTypes.contains(wordType)) return false
 
         val article = bot.get().getArticle(text)
-        if (article == null || article.text.isBlank() || article.text.contains("истор.") || article.text.contains("муз.")) return true
+        if (
+            article == null ||
+                article.text.isBlank() ||
+                article.text.contains("истор.") ||
+                article.text.contains("муз.")
+        )
+            return true
         if (article.text.contains("Имя собственное")) {
             return true
         }
 
         return false
     }
-
-
 }

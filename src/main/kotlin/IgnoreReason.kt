@@ -4,5 +4,5 @@ enum class IgnoreReason {
     ARCHAISM,
     NONE,
     BLOCKED_BY_ADMIN,
-    WIKTIONARY_NOT_FOUND
+    WIKTIONARY_NOT_FOUND,
 }
