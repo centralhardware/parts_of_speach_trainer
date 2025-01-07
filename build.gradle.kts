@@ -21,7 +21,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.4")
     implementation("io.github.crackthecodeabhi:kreds:0.9.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
     implementation("net.sourceforge:jwbf:3.1.1")
 }
